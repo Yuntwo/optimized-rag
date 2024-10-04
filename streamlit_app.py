@@ -1,10 +1,11 @@
 import streamlit as st
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
+from langchain.schema import Document
 
-from ensemble import ensemble_retriever_from_docs
+from ensemble import ensemble_retriever_from_mods
 from full_chain import create_full_chain, ask_question
-from local_loader import load_txt_files
+import json
 
 st.set_page_config(page_title="LangChain & Streamlit RAG")
 st.title("LangChain & Streamlit RAG")
@@ -35,14 +36,15 @@ def show_ui(qa, prompt_to_user="How may I help you?"):
         st.session_state.messages.append(message)
 
 
+# Get ensemble retriever for mods
 @st.cache_resource
 def get_retriever(openai_api_key=None):
-    docs = load_txt_files()
+    mods = load_and_chunk_json('data/mods22_23.json')
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key, model="text-embedding-3-small")
-    return ensemble_retriever_from_docs(docs, embeddings=embeddings)
+    return ensemble_retriever_from_mods(mods, embeddings=embeddings)
 
 
-def get_chain(openai_api_key=None, huggingfacehub_api_token=None):
+def get_chain(openai_api_key=None):
     ensemble_retriever = get_retriever(openai_api_key=openai_api_key)
     chain = create_full_chain(ensemble_retriever,
                               openai_api_key=openai_api_key,
@@ -62,6 +64,40 @@ def get_secret_or_input(secret_key, secret_name, info_link=None):
         if info_link:
             st.markdown(f"[Get an {secret_name}]({info_link})")
     return secret_value
+
+
+def load_and_chunk_json(json_path):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+
+    documents = []
+    for module in data:
+        # Combine each json object into a string and add metadata
+        page_content = (
+            f"Module Code: {module['moduleCode']}\n"
+            f"Title: {module['title']}\n"
+            f"Description: {module['description']}\n"
+            f"Credits: {module['moduleCredit']}\n"
+            f"Department: {module['department']}\n"
+            f"Faculty: {module['faculty']}\n"
+            f"Workload: {module.get('workload', 'N/A')}\n"
+            f"Semester Data: {module.get('semesterData', 'N/A')}\n"
+        )
+
+        # Create a Document object for each module with metadata
+        document = Document(
+            page_content=page_content,
+            metadata={
+                "moduleCode": module['moduleCode'],
+                "title": module['title'],
+                "moduleCredit": module['moduleCredit'],
+                "department": module['department'],
+                "faculty": module['faculty']
+            }
+        )
+        documents.append(document)
+
+    return documents
 
 
 def run():
@@ -86,7 +122,7 @@ def run():
         ready = False
 
     if ready:
-        chain = get_chain(openai_api_key=openai_api_key, huggingfacehub_api_token=huggingfacehub_api_token)
+        chain = get_chain(openai_api_key=openai_api_key)
         st.subheader("Ask me questions about this week's meal plan")
         show_ui(chain, "What would you like to know?")
     else:

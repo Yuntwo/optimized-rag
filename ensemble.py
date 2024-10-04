@@ -26,6 +26,20 @@ def ensemble_retriever_from_docs(docs, embeddings=None):
     return ensemble_retriever
 
 
+# Hybrid search for nus mods
+def ensemble_retriever_from_mods(mods, embeddings=None):
+    vs = create_vector_db(mods, embeddings)
+    vs_retriever = vs.as_retriever()
+
+    bm25_retriever = BM25Retriever.from_texts([t.page_content for t in mods])
+
+    ensemble_retriever = EnsembleRetriever(
+        retrievers=[bm25_retriever, vs_retriever],
+        weights=[0.5, 0.5])
+
+    return ensemble_retriever
+
+
 def main():
     load_dotenv()
 

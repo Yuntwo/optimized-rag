@@ -1,0 +1,32 @@
+[
+  {
+    "moduleCode": "AC5001",
+    "title": "Architectural History of Singapore",
+    "description": "This module introduces the architectural history of Singapore from the pre-colonial era to the contemporary period from an interdisciplinary perspective. It explores the social and cultural role of architects, and to how that role has been interpreted and has evolved. It also offers critical views on the role of architecture in constructing the national identity of Singapore.",
+    "moduleCredit": "4",
+    "department": "Architecture",
+    "faculty": "College of Design and Engineering",
+    "workload": [2, 1, 0, 5, 2],
+    "semesterData": [
+      {
+        "semester": 1,
+        "covidZones": ["B"]
+      }
+    ]
+  },
+  {
+    "moduleCode": "AC5002",
+    "title": "Conservation Approaches and Philosophies",
+    "description": "This module aims to introduce students to current conservation approaches such as Historic Urban Landscape, Heritage Impact Assessment, Conservation Management Plan, Historic Area Assessments approach and applications and their application and relevance in the Asian context. The focus will be to understand how and why these concepts and methods have evolved and applied in practice in the Singapore context. Students will be strongly encouraged to contextualise this with other international heritage conservation scenarios in the region and worldwide to reflect broader shifts in conservation approaches.",
+    "moduleCredit": "4",
+    "department": "Architecture",
+    "faculty": "College of Design and Engineering",
+    "workload": [1, 2, 0, 7, 0],
+    "semesterData": [
+      {
+        "semester": 2,
+        "covidZones": ["Unknown"]
+      }
+    ]
+  }
+]
