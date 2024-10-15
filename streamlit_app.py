@@ -37,6 +37,7 @@ def show_ui(qa, prompt_to_user="How may I help you?"):
 
 
 # Get ensemble retriever for mods
+# After restarted, the cache is removed and reran
 @st.cache_resource
 def get_retriever(openai_api_key=None):
     mods = load_and_chunk_json('data/mods22_23.json')

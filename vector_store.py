@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 from typing import List
@@ -27,8 +28,21 @@ class EmbeddingProxy:
         return self.embedding.embed_query(text)
 
 
-# This happens all at once, not ideal for large datasets.
-def create_vector_db(texts, embeddings=None, collection_name="chroma"):
+# load db from persistent db
+# 14439 documents in total
+def get_vector_db(collection_name="chroma"):
+    openai_api_key = os.environ["OPENAI_API_KEY"]
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key, model="text-embedding-3-small")
+
+    proxy_embeddings = EmbeddingProxy(embeddings)
+    db = Chroma(collection_name=collection_name,
+                embedding_function=proxy_embeddings,
+                persist_directory=os.path.join("store/", collection_name))
+    return db
+
+
+# Store into db in batch size to avoid exhausting memory
+def create_vector_db(texts, embeddings=None, collection_name="chroma", batch_size=100):
     if not texts:
         logging.warning("Empty texts passed in to create vector database")
     # Select embeddings
@@ -45,7 +59,24 @@ def create_vector_db(texts, embeddings=None, collection_name="chroma"):
     db = Chroma(collection_name=collection_name,
                 embedding_function=proxy_embeddings,
                 persist_directory=os.path.join("store/", collection_name))
-    db.add_documents(texts)
+
+    # Process texts in batches
+    print(f"Texts length: {len(texts)}\n", flush=True)
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i + batch_size]
+        # Use 'moduleCode' in Document metadata as id, it's ensured unique
+        batch_ids = [doc.metadata['moduleCode'] for doc in batch if 'moduleCode' in doc.metadata]
+        # Ensure the length of batch_ids and batch matches
+        if len(batch_ids) != len(batch):
+            raise ValueError("Not all documents have 'moduleCode' in their metadata.")
+        # print(f"Generated embeddings: {embeddings}")
+        db.add_documents(documents=batch, ids=batch_ids)
+        # db.add_documents(documents=batch)
+        print(f"Added batch {i}\n", flush=True)
+        # db.add_texts(texts=[doc.page_content for doc in batch], ids=batch_ids)
+        db.persist()
+        del batch
+        gc.collect()
 
     return db
 

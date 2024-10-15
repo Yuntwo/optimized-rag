@@ -8,7 +8,7 @@ from basic_chain import get_model
 from rag_chain import make_rag_chain
 from remote_loader import load_web_page
 from splitter import split_documents
-from vector_store import create_vector_db
+from vector_store import create_vector_db, get_vector_db
 from dotenv import load_dotenv
 
 
@@ -28,6 +28,7 @@ def ensemble_retriever_from_docs(docs, embeddings=None):
 
 # Hybrid search for nus mods
 def ensemble_retriever_from_mods(mods, embeddings=None):
+    # vs = get_vector_db()
     vs = create_vector_db(mods, embeddings)
     vs_retriever = vs.as_retriever()
 
