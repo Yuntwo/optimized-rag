@@ -1,6 +1,6 @@
 import os
 
-from langchain_community.retrievers import BM25Retriever
+from langchain_community.retrievers import BM25Retriever, TFIDFRetriever
 from langchain.retrievers import EnsembleRetriever
 from langchain_core.output_parsers import StrOutputParser
 
@@ -17,10 +17,11 @@ def ensemble_retriever_from_docs(docs, embeddings=None):
     vs = create_vector_db(texts, embeddings)
     vs_retriever = vs.as_retriever()
 
-    bm25_retriever = BM25Retriever.from_texts([t.page_content for t in texts])
+    # full_text_retriever = BM25Retriever.from_texts([t.page_content for t in texts])
+    full_text_retriever = TFIDFRetriever.from_texts([t.page_content for t in texts])
 
     ensemble_retriever = EnsembleRetriever(
-        retrievers=[bm25_retriever, vs_retriever],
+        retrievers=[full_text_retriever, vs_retriever],
         weights=[0.5, 0.5])
 
     return ensemble_retriever
@@ -28,15 +29,16 @@ def ensemble_retriever_from_docs(docs, embeddings=None):
 
 # Hybrid search for nus mods
 def ensemble_retriever_from_mods(mods, embeddings=None):
-    # vs = get_vector_db()
-    vs = create_vector_db(mods, embeddings)
+    vs = get_vector_db()
+    # vs = create_vector_db(mods, embeddings)
     vs_retriever = vs.as_retriever()
 
-    bm25_retriever = BM25Retriever.from_texts([t.page_content for t in mods])
+    # full_text_retriever = BM25Retriever.from_texts([t.page_content for t in mods])
+    full_text_retriever = TFIDFRetriever.from_texts([t.page_content for t in mods])
 
     ensemble_retriever = EnsembleRetriever(
-        retrievers=[bm25_retriever, vs_retriever],
-        weights=[0.5, 0.5])
+        retrievers=[full_text_retriever, vs_retriever],
+        weights=[0, 1])
 
     return ensemble_retriever
 

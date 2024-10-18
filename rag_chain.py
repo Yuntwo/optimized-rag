@@ -11,6 +11,52 @@ from basic_chain import basic_chain, get_model
 from remote_loader import get_wiki_docs
 from splitter import split_documents
 from vector_store import create_vector_db
+from transformers import BertTokenizer, BertForSequenceClassification
+import torch
+
+
+def rerank_results(inputs):
+    """Rerank retrieved documents using a reranker model (BERT)."""
+    retrieved_docs = inputs['docs']  # Extract the retrieved documents
+    query = inputs['query']  # Extract the query
+
+    # Initialize the BERT model for sequence classification
+    reranker_model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+    reranked_docs = []
+
+    # Loop over each document and rank it based on its relevance to the query
+    for doc in retrieved_docs:
+        # Extract document content from the `page_content` field
+        text = doc.page_content
+
+        # Tokenize both the query and the document text
+        input_tokens = tokenizer(query, text, return_tensors='pt', truncation=True)
+
+        # Use the model to generate a relevance score
+        with torch.no_grad():
+            outputs = reranker_model(**input_tokens)
+            score = torch.sigmoid(outputs.logits[:, 1]).item()  # Get the positive classification score
+
+        # Append the document and its score as a tuple
+        reranked_docs.append((doc, score))
+
+        # Log the document text and its score
+        print(f"Document: {text[:100]}... | Score: {score}")
+
+    # Sort the documents based on the score in descending order
+    reranked_docs = sorted(reranked_docs, key=lambda x: x[1], reverse=True)
+
+    # Log the top document
+    if reranked_docs:
+        top_doc = reranked_docs[0][0].page_content
+        print(f"\nTop Document: {top_doc[:500]}...")  # Print a snippet of the top document
+    else:
+        print("No documents were retrieved.")
+
+    # Return the top 1 document in the list
+    return [doc[0] for doc in reranked_docs]
 
 
 def find_similar(vs, query):
@@ -25,29 +71,36 @@ def format_docs(docs):
 def get_question(input):
     if not input:
         return None
-    elif isinstance(input,str):
+    elif isinstance(input, str):
         return input
-    elif isinstance(input,dict) and 'question' in input:
+    elif isinstance(input, dict) and 'question' in input:
         return input['question']
-    elif isinstance(input,BaseMessage):
+    elif isinstance(input, BaseMessage):
         return input.content
     else:
         raise Exception("string or dict with 'question' key expected as RAG chain input.")
 
 
-def make_rag_chain(model, retriever, rag_prompt = None):
+def make_rag_chain(model, retriever, rag_prompt=None):
     # We will use a prompt template from langchain hub.
     if not rag_prompt:
         rag_prompt = hub.pull("rlm/rag-prompt")
 
     # And we will use the LangChain RunnablePassthrough to add some custom processing into our chain.
     rag_chain = (
-            {
-                "context": RunnableLambda(get_question) | retriever | format_docs,
-                "question": RunnablePassthrough()
-            }
-            | rag_prompt
-            | model
+        {
+            # Step 1: Extract the query from the input
+            "context": RunnableLambda(get_question)
+            # Step 2: Retrieve documents using the extracted query
+            | (lambda query: {"docs": retriever.get_relevant_documents(query), "query": query})
+            # Step 3: Pass the retrieved docs and query to the reranking step
+            | RunnableLambda(rerank_results)
+            # Step 4: Format the reranked documents
+            | format_docs,
+            "question": RunnablePassthrough()
+        }
+        | rag_prompt
+        | model
     )
 
     return rag_chain
