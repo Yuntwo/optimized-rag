@@ -1,0 +1,100 @@
+1	What does CS4234 teach?	CS4234
+2	I want to learn about optimization algorithms, recommend me some modules.	CS4234
+3	Which modules cover cryptography?	CS4236
+4	What topics are covered in CS6203?	CS6203
+5	Which module covers multimedia data management and data warehousing?	CS6203
+6	Does CS4266 cover network performance?	CS4266
+7	What topics are included in CS6213?	CS6213
+8	Which modules discuss cryptographic primitives?	CS4236
+9	Recommend modules that cover network security.	CS4238
+10	Describe the main aim of CS6205.	CS6205
+11	What is the exam date for CS4261 in Semester 1?	CS4261
+12	List modules that introduce machine learning for NLP.	CS4248
+13	Suggest a module focused on computer vision.	CS4243
+14	Which courses include secure programming practices?	CS4239
+15	Recommend modules that teach natural language processing.	CS4248
+16	What does CS4239 cover?	CS4239
+17	Which module introduces AI planning and decision making?	CS4246
+18	Are there any modules on performance analysis of embedded systems?	CS5271
+19	Find modules with advanced operating systems.	CS5250
+20	What are the modules available under the Advanced Topics in database systems?	CS6203
+21	Which modules covers implementation of programming languages?	CS4215
+22	Find courses that cover secure programming practices.	CS4239
+23	Suggest a module that teaches about randomized algorithms.	CS5330
+24	Which modules cover distributed databases?	CS5424
+25	What module teaches multimedia information retrieval?	CS4241
+26	Suggest modules that discuss social media computing.	CS4242
+27	Recommend modules that cover problem formulation and problem solving.	CS1010
+28	Find modules teach TCP/IP security,.	CS4236
+29	Which modules discuss neural networks and deep learning?	CS5242
+30	Recommend a module that includes secure network protocols.	CS5321
+31	List the modules that discuss algorithmic mechanism design.	CS4261
+32	Which modules teach about virtual and augmented reality interaction design?	CS4240
+33	Which module includes the discussion of fuzzy logic and genetic algorithms?	CS6208
+34	What does CS6208 cover?	CS6208
+35	Which modules include AI planning?	CS4246
+36	Recommend a module that teaches about machine learning theory.	CS5339
+37	Recommend modules that focus on advanced database systems.	CS6203
+38	List modules that discuss neural architecture search.	CS5260
+39	I want to learn object-oriented programming, recommend me some modules.	CS2030
+40	Does CS3241 covers computer graphics terminology and concepts?	CS3241
+41	Suggest modules that cover both AI and machine learning.	CS5339
+42	Find courses that cover objects and classes.	CS2030
+43	Find courses that cover Sound and Music Computing.	CS5647
+44	What is discussed in CS4234R?	CS4234R
+45	Which modules focus on secure software development?	CS4239
+46	List some of the topics covered in CS6209.	CS6209
+47	Which modules involve advanced topics in human-computer interaction?	CS6206
+48	What is the primary aim of CS4215?	CS4215
+49	List modules covering topics on multimedia analysis.	CS6240
+50	Which module discusses the integration of media technologies in the computing industry?	CS6212
+51	What module illustrates advanced computing techniques for CS6218?	CS6218
+52	What module discusses the development in network technologies and techniques over the past three years?	CS6204
+53	Which course dives into security issues and principles of computer systems?	CS6231
+54	What is the prerequisite for CS6207?	CS6207
+55	Describe the focus of CS6208's coverage on artificial intelligence.	CS6208
+56	Which course includes the application of techniques for big data mining and large datasets?	CS6220
+57	What topics are included in CS6243?	CS6234
+58	What is discussed in CS4231?	CS4231
+59	What does CS6203 say about the integration of heterogeneous and legacy systems?	CS6203
+60	What topics does CS6204 examine regarding telecommunications' latest developments?	CS6204
+61	What aspects does CS6230 address in terms of information security?	CS6230
+62	What is discussed in CS6217 about symbolic execution-based testing?	CS6217
+63	Which module focuses on program analysis and performance bottlenecks?	CS6215
+64	Which module prepares students for advanced research in machine learning?	CS6216
+65	List some of the techniques taught in CS6205 for model execution.	CS6205
+66	What topics does CS6231 cover regarding applied cryptography?	CS6231
+67	What is the objective of CS6209 regarding cryptographic techniques?	CS6209
+68	Which module introduces experimental technologies in biology and computational biology solutions?	CS6222
+69	What does CS6206 teach about augmented reality and virtual reality technologies?	CS6206
+70	What is the title of CS5344?	CS5344
+71	Describe the main focus of CS5344.	CS5344
+72	How many modular credits is CS5344 worth?	CS5344
+73	What department offers CS5344?	CS5344
+74	List some of the key topics covered in CS5344.	CS5344
+75	What are the prerequisites for enrolling in CS5344?	CS5344
+76	What tools and techniques are taught in CS5344 for handling large datasets?	CS5344
+77	Which attributes are associated with CS5344?	CS5344
+78	Does CS5344 teaches data-streaming processing?	CS5344
+79	What does CS5344 teach about map-reduce?	CS5344
+80	Does is similarity search addressed in CS5344?	CS5344
+81	What faculty offers CS5344?	CS5344
+82	Who should take CS5344, based on its prerequisite?	CS5344
+83	What workload components make up CS5344?	CS5344
+84	What is the title of CS5425?	CS5425
+85	Describe the main focus of CS5425.	CS5425
+86	How many modular credits is CS5425 worth?	CS5425
+87	What department offers CS5425?	CS5425
+88	List some of the key topics covered in CS5425.	CS5425
+89	What are the prerequisites for enrolling in CS5425?	CS5425
+90	What are the preclusions for CS5425?	CS5425
+91	When are the exam dates for CS5425 in Semester 1 and Semester 2?	CS5425
+92	Does CS5425 teach about Apache Hadoop and Spark?	CS5425
+93	What is the title of CS5239?	CS5239
+94	Describe the main objective of CS5239.	CS5239
+95	How many modular credits is CS5239 worth?	CS5239
+96	What department offers CS5239?	CS5239
+97	List some of the key topics covered in CS5239.	CS5239
+98	What are the prerequisites for enrolling in CS5239?	CS5239
+99	What faculty offers CS5239?	CS5239
+100	During which semester is CS5239 offered?	CS5239
