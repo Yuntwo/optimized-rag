@@ -4,14 +4,14 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 
 from ensemble import ensemble_retriever_from_mods
-from full_chain import create_full_chain, ask_question
+from full_chain import create_full_chain, ask_question, create_direct_chain
 import json
 
 st.set_page_config(page_title="LangChain & Streamlit RAG")
 st.title("LangChain & Streamlit RAG")
 
 
-def show_ui(qa, prompt_to_user="How may I help you?"):
+def show_ui(dc, qa, prompt_to_user="How may I help you?"):
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [{"role": "assistant", "content": prompt_to_user}]
 
@@ -30,7 +30,7 @@ def show_ui(qa, prompt_to_user="How may I help you?"):
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                response = ask_question(qa, prompt)
+                response = ask_question(dc, qa, prompt)
                 st.markdown(response.content)
         message = {"role": "assistant", "content": response.content}
         st.session_state.messages.append(message)
@@ -52,6 +52,10 @@ def get_chain(openai_api_key=None):
                               chat_memory=StreamlitChatMessageHistory(key="langchain_messages"))
     return chain
 
+def get_chain_direct_match(openai_api_key=None):
+    chain = create_direct_chain(openai_api_key=openai_api_key,
+                              chat_memory=StreamlitChatMessageHistory(key="langchain_messages"))
+    return chain
 
 def get_secret_or_input(secret_key, secret_name, info_link=None):
     if secret_key in st.secrets:
@@ -74,15 +78,25 @@ def load_and_chunk_json(json_path):
     documents = []
     for module in data:
         # Combine each json object into a string and add metadata
+        # page_content = (
+        #     f"Module Code: {module['moduleCode']}\n"
+        #     f"Title: {module['title']}\n"
+        #     f"Description: {module['description']}\n"
+        #     f"Credits: {module['moduleCredit']}\n"
+        #     f"Department: {module['department']}\n"
+        #     f"Faculty: {module['faculty']}\n"
+        #     f"Workload: {module.get('workload', 'N/A')}\n"
+        #     f"Semester Data: {module.get('semesterData', 'N/A')}\n"
+        # )
+
         page_content = (
-            f"Module Code: {module['moduleCode']}\n"
-            f"Title: {module['title']}\n"
-            f"Description: {module['description']}\n"
-            f"Credits: {module['moduleCredit']}\n"
-            f"Department: {module['department']}\n"
-            f"Faculty: {module['faculty']}\n"
-            f"Workload: {module.get('workload', 'N/A')}\n"
-            f"Semester Data: {module.get('semesterData', 'N/A')}\n"
+            f"The module code is {module['moduleCode']}, and the title of the module is {module['title']}. "
+            f"{module['description']} "
+            f"It offers {module['moduleCredit']} module credit and is provided by the {module['department']}, "
+            f"under the {module['faculty']}. "
+            f"The workload for this module includes {module.get('workload', 'N/A')}. "
+            f"Students must meet the prerequisite, which states that they should be {module.get('prerequisite', 'N/A')} "
+            f"in order to enroll in this module."
         )
 
         # Create a Document object for each module with metadata
@@ -123,9 +137,10 @@ def run():
         ready = False
 
     if ready:
+        direct_chain = get_chain_direct_match(openai_api_key=openai_api_key)
         chain = get_chain(openai_api_key=openai_api_key)
         st.subheader("Ask me questions about NUS module")
-        show_ui(chain, "What would you like to know?")
+        show_ui(direct_chain,chain, "What would you like to know?")
     else:
         st.stop()
 

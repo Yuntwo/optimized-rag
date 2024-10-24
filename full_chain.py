@@ -8,12 +8,10 @@ from basic_chain import get_model
 from filter import ensemble_retriever_from_docs
 from local_loader import load_txt_files
 from memory import create_memory_chain
-from rag_chain import make_rag_chain
+from rag_chain import make_rag_chain, make_direct_chain
+import re
 
-
-def create_full_chain(retriever, openai_api_key=None, chat_memory=ChatMessageHistory()):
-    model = get_model("ChatGPT", openai_api_key=openai_api_key)
-    system_prompt = """
+system_prompt = """
 You are a helpful assistant designed to provide information about university modules. You have access to detailed module data, which includes comprehensive details about each module offered by the university. Based on this information, you will respond to queries about the modules, such as prerequisites, workload, exam dates, and more.
 
 ### Module Data Structure
@@ -83,10 +81,13 @@ Use the provided module context to respond efficiently and accurately to user in
 
 Use the following context and the users' chat history to help the user:
 If you don't know the answer, just say that you don't know. 
-    
+
 Context: {context}
-    
+
 Question: """
+
+def create_full_chain(retriever, openai_api_key=None, chat_memory=ChatMessageHistory()):
+    model = get_model("ChatGPT", openai_api_key=openai_api_key)
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -97,16 +98,46 @@ Question: """
 
     rag_chain = make_rag_chain(model, retriever, rag_prompt=prompt)
     chain = create_memory_chain(model, rag_chain, chat_memory)
+
     return chain
 
 
-def ask_question(chain, query):
-    response = chain.invoke(
-        {"question": query},
-        config={"configurable": {"session_id": "foo"}}
+def create_direct_chain(openai_api_key=None, chat_memory=ChatMessageHistory()):
+    model = get_model("ChatGPT", openai_api_key=openai_api_key)
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_prompt),
+            ("human", "{question}"),
+        ]
     )
+
+    rag_chain = make_direct_chain(model, prompt)
+    chain = create_memory_chain(model, rag_chain, chat_memory)
+
+    return chain
+
+
+def ask_question(direct_chain, chain, query):
+    if len(detect_module_code(query)) > 0:
+        print("Direct chain")
+        response = direct_chain.invoke(
+            {"question": query},
+            config={"configurable": {"session_id": "foo"}}
+        )
+    else:
+        print("Full chain")
+        response = chain.invoke(
+            {"question": query},
+            config={"configurable": {"session_id": "foo"}}
+        )
+
     return response
 
+pattern = re.compile(r'\b[a-zA-Z]{2}\d{4}[a-zA-Z0-9]?\b')
+def detect_module_code(query):
+    matches = pattern.findall(query)
+    return matches
 
 def main():
     load_dotenv()

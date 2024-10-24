@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from langchain import hub
+from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
@@ -13,6 +14,8 @@ from splitter import split_documents
 from vector_store import create_vector_db
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
+import re
+import json
 
 
 def rerank_results(inputs):
@@ -88,22 +91,92 @@ def make_rag_chain(model, retriever, rag_prompt=None):
 
     # And we will use the LangChain RunnablePassthrough to add some custom processing into our chain.
     rag_chain = (
-        {
-            # Step 1: Extract the query from the input
-            "context": RunnableLambda(get_question)
-            # Step 2: Retrieve documents using the extracted query
-            | (lambda query: {"docs": retriever.get_relevant_documents(query), "query": query})
-            # Step 3: Pass the retrieved docs and query to the reranking step
-            | RunnableLambda(rerank_results)
-            # Step 4: Format the reranked documents
-            | format_docs,
-            "question": RunnablePassthrough()
-        }
-        | rag_prompt
-        | model
+            {
+                # Step 1: Extract the query from the input
+                "context": RunnableLambda(get_question)
+                           # Step 2: Retrieve documents using the extracted query
+                           | (lambda query: {"docs": retriever.get_relevant_documents(query), "query": query})
+                           # Step 3: Pass the retrieved docs and query to the reranking step
+                           | RunnableLambda(rerank_results)
+                           # Step 4: Format the reranked documents
+                           | format_docs,
+                "question": RunnablePassthrough()
+            }
+            | rag_prompt
+            | model
     )
 
     return rag_chain
+
+
+def fetch_module_content(query):
+    codes = detect_module_code(query)
+    mods = load_and_chunk_json('data/mods22_23_test.json')
+    contexts = []
+    for code in codes:
+        query = mods.get(code)
+        if query:
+            contexts.append(query.page_content)
+
+    final_context = "\n\n".join(contexts)
+    print(f"Fetched context: {final_context}")
+    return final_context
+
+
+def load_and_chunk_json(json_path):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+
+    documents_map = {}
+    for module in data:
+        page_content = (
+            f"The module code is {module['moduleCode']}, and the title of the module is {module['title']}. "
+            f"{module['description']} "
+            f"It offers {module['moduleCredit']} module credit and is provided by the {module['department']}, "
+            f"under the {module['faculty']}. "
+            f"The workload for this module includes {module.get('workload', 'N/A')}. "
+            f"Students must meet the prerequisite, which states that they should be {module.get('prerequisite', 'N/A')} "
+            f"in order to enroll in this module."
+        )
+
+        # Create a Document object for each module with metadata
+        document = Document(
+            page_content=page_content,
+            metadata={
+                "moduleCode": module['moduleCode'],
+                "title": module['title'],
+                "moduleCredit": module['moduleCredit'],
+                "department": module['department'],
+                "faculty": module['faculty']
+            }
+        )
+
+        # Store the document in the dictionary with moduleCode as key
+        documents_map[module['moduleCode']] = document
+
+    return documents_map
+
+
+def make_direct_chain(model, rag_prompt):
+    # And we will use the LangChain RunnablePassthrough to add some custom processing into our chain.
+    rag_chain = (
+            {
+                # Step 1: Extract the query from the input
+                "context": RunnableLambda(get_question)
+                           | RunnableLambda(fetch_module_content),
+                "question": RunnablePassthrough()
+            }
+            | rag_prompt
+            | model
+    )
+
+    return rag_chain
+
+
+pattern = re.compile(r'\b[a-zA-Z]{2}\d{4}[a-zA-Z0-9]?\b')
+def detect_module_code(query):
+    matches = pattern.findall(query)
+    return matches
 
 
 def main():
