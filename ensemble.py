@@ -38,7 +38,7 @@ def ensemble_retriever_from_mods(mods, embeddings=None):
 
     ensemble_retriever = EnsembleRetriever(
         retrievers=[full_text_retriever, vs_retriever],
-        weights=[0, 1])
+        weights=[0.5, 0.5])
 
     return ensemble_retriever
 
@@ -60,4 +60,3 @@ if __name__ == "__main__":
     # this is to quite parallel tokenizers warning.
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     main()
-

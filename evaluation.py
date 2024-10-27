@@ -5,9 +5,12 @@ import pandas as pd
 from streamlit_app import get_retriever
 from rag_chain import rerank_results
 import re
+
+
 def load_excel_file(file_path):
     df = pd.read_excel(file_path)
     return df
+
 
 def main():
     cases = load_excel_file("data/test.xlsx")
@@ -21,11 +24,17 @@ def main():
         query = case["Evaluation Question"]
         module_code = case["Module Code"]
 
-        docs = retriever.get_relevant_documents(query)
-        reranked_results = rerank_results({"docs": docs, "query": query})
-
+        print(f"---- Running {index} / {total} ----")
         print("query: " + query)
         print("expected: " + module_code)
+
+        docs = retriever.get_relevant_documents(query)
+
+        # As the get_relevant_documents return all documents retrieved by each child retriever (each return 4)
+        # So must filter the top 4 from all documents so the weight will really work
+        docs = docs[:4]
+
+        reranked_results = rerank_results({"docs": docs, "query": query})
 
         module_codes = extract_module_codes(reranked_results)
         print("result:" + str(module_codes))
@@ -39,9 +48,10 @@ def main():
     print(f"Accuracy: {hit_count / total}")
     print(f"Time taken: {time.time() - start_time}")
 
+
 def extract_module_codes(documents):
     module_codes = []
-    pattern = r"Module Code: (\w+)"
+    pattern = r"The module code is (\w+)"
 
     for document in documents:
         match = re.search(pattern, document.page_content)
@@ -49,6 +59,7 @@ def extract_module_codes(documents):
             module_codes.append(match.group(1))
 
     return module_codes
+
 
 if __name__ == '__main__':
     # this is to quite parallel tokenizers warning.
