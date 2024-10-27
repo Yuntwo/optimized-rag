@@ -5,6 +5,7 @@ from pypdf import PdfReader
 from langchain.docstore.document import Document
 from langchain_community.document_loaders import TextLoader
 from langchain_community.document_loaders.csv_loader import CSVLoader
+import json
 
 
 def list_txt_files(data_dir="./data"):
@@ -54,6 +55,50 @@ def get_document_text(uploaded_file, title=None):
     return docs
 
 
+def load_and_chunk_json(json_path):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+
+    documents = []
+    for module in data:
+        # Combine each json object into a string and add metadata
+        # page_content = (
+        #     f"Module Code: {module['moduleCode']}\n"
+        #     f"Title: {module['title']}\n"
+        #     f"Description: {module['description']}\n"
+        #     f"Credits: {module['moduleCredit']}\n"
+        #     f"Department: {module['department']}\n"
+        #     f"Faculty: {module['faculty']}\n"
+        #     f"Workload: {module.get('workload', 'N/A')}\n"
+        #     f"Semester Data: {module.get('semesterData', 'N/A')}\n"
+        # )
+
+        page_content = (
+            f"The module code is {module['moduleCode']}, and the title of the module is {module['title']}. "
+            f"{module['description']} "
+            f"It offers {module['moduleCredit']} module credit and is provided by the {module['department']}, "
+            f"under the {module['faculty']}. "
+            f"The workload for this module includes {module.get('workload', 'N/A')}. "
+            f"Students must meet the prerequisite, which states that they should be {module.get('prerequisite', 'N/A')} "
+            f"in order to enroll in this module."
+        )
+
+        # Create a Document object for each module with metadata
+        document = Document(
+            page_content=page_content,
+            metadata={
+                "moduleCode": module['moduleCode'],
+                "title": module['title'],
+                "moduleCredit": module['moduleCredit'],
+                "department": module['department'],
+                "faculty": module['faculty']
+            }
+        )
+        documents.append(document)
+
+    return documents
+
+
 if __name__ == "__main__":
     example_pdf_path = "examples/healthy_meal_10_tips.pdf"
     docs = get_document_text(open(example_pdf_path, "rb"))
@@ -68,4 +113,3 @@ if __name__ == "__main__":
     csv_docs = load_csv_files("examples")
     for doc in csv_docs:
         print(doc)
-

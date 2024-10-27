@@ -1,11 +1,10 @@
 import streamlit as st
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_openai import OpenAIEmbeddings
-from langchain.schema import Document
 
 from ensemble import ensemble_retriever_from_mods
 from full_chain import create_full_chain, ask_question, create_direct_chain
-import json
+from local_loader import load_and_chunk_json
 
 st.set_page_config(page_title="LangChain & Streamlit RAG")
 st.title("LangChain & Streamlit RAG")
@@ -52,10 +51,12 @@ def get_chain(openai_api_key=None):
                               chat_memory=StreamlitChatMessageHistory(key="langchain_messages"))
     return chain
 
+
 def get_chain_direct_match(openai_api_key=None):
     chain = create_direct_chain(openai_api_key=openai_api_key,
-                              chat_memory=StreamlitChatMessageHistory(key="langchain_messages"))
+                                chat_memory=StreamlitChatMessageHistory(key="langchain_messages"))
     return chain
+
 
 def get_secret_or_input(secret_key, secret_name, info_link=None):
     if secret_key in st.secrets:
@@ -69,50 +70,6 @@ def get_secret_or_input(secret_key, secret_name, info_link=None):
         if info_link:
             st.markdown(f"[Get an {secret_name}]({info_link})")
     return secret_value
-
-
-def load_and_chunk_json(json_path):
-    with open(json_path, 'r') as f:
-        data = json.load(f)
-
-    documents = []
-    for module in data:
-        # Combine each json object into a string and add metadata
-        # page_content = (
-        #     f"Module Code: {module['moduleCode']}\n"
-        #     f"Title: {module['title']}\n"
-        #     f"Description: {module['description']}\n"
-        #     f"Credits: {module['moduleCredit']}\n"
-        #     f"Department: {module['department']}\n"
-        #     f"Faculty: {module['faculty']}\n"
-        #     f"Workload: {module.get('workload', 'N/A')}\n"
-        #     f"Semester Data: {module.get('semesterData', 'N/A')}\n"
-        # )
-
-        page_content = (
-            f"The module code is {module['moduleCode']}, and the title of the module is {module['title']}. "
-            f"{module['description']} "
-            f"It offers {module['moduleCredit']} module credit and is provided by the {module['department']}, "
-            f"under the {module['faculty']}. "
-            f"The workload for this module includes {module.get('workload', 'N/A')}. "
-            f"Students must meet the prerequisite, which states that they should be {module.get('prerequisite', 'N/A')} "
-            f"in order to enroll in this module."
-        )
-
-        # Create a Document object for each module with metadata
-        document = Document(
-            page_content=page_content,
-            metadata={
-                "moduleCode": module['moduleCode'],
-                "title": module['title'],
-                "moduleCredit": module['moduleCredit'],
-                "department": module['department'],
-                "faculty": module['faculty']
-            }
-        )
-        documents.append(document)
-
-    return documents
 
 
 def run():
@@ -140,7 +97,7 @@ def run():
         direct_chain = get_chain_direct_match(openai_api_key=openai_api_key)
         chain = get_chain(openai_api_key=openai_api_key)
         st.subheader("Ask me questions about NUS module")
-        show_ui(direct_chain,chain, "What would you like to know?")
+        show_ui(direct_chain, chain, "What would you like to know?")
     else:
         st.stop()
 
