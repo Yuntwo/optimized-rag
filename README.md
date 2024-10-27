@@ -89,7 +89,8 @@ python ensemble.py
 >    Split into 313 chunks
 >    According to Russell, the key problems of philosophy include the uncertainty of knowledge, the limitations of metaphysical reasoning, and the inability to provide definite answers to fundamental questions. Philosophy aims to diminish the risk of error, but cannot eliminate it entirely due to human fallibility. The value of philosophy lies in its ability to challenge common sense beliefs and lead to the exploration of complex problems.
 
-
+## Attention
+- Don't open multiple pages for the app, or will run parallel evaluation or other scripts whenever restart.
 
 ## Example Queries for Streamlit App
 
