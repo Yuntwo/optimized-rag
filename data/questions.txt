@@ -54,7 +54,7 @@
 54	What is the prerequisite for CS6207?	CS6207
 55	Describe the focus of CS6208's coverage on artificial intelligence.	CS6208
 56	Which course includes the application of techniques for big data mining and large datasets?	CS6220
-57	What topics are included in CS6243?	CS6234
+57	What topics are included in CS6243?	CS6243
 58	What is discussed in CS4231?	CS4231
 59	What does CS6203 say about the integration of heterogeneous and legacy systems?	CS6203
 60	What topics does CS6204 examine regarding telecommunications' latest developments?	CS6204
@@ -75,7 +75,7 @@
 75	What are the prerequisites for enrolling in CS5344?	CS5344
 76	What tools and techniques are taught in CS5344 for handling large datasets?	CS5344
 77	Which attributes are associated with CS5344?	CS5344
-78	Does CS5344 teaches data-streaming processing?	CS5344
+78	Does CS5344 teach data-streaming processing?	CS5344
 79	What does CS5344 teach about map-reduce?	CS5344
 80	Does is similarity search addressed in CS5344?	CS5344
 81	What faculty offers CS5344?	CS5344
