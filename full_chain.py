@@ -80,11 +80,12 @@ Use the module information provided to craft responses that are both precise and
 Use the provided module context to respond efficiently and accurately to user inquiries.
 
 Use the following context and the users' chat history to help the user:
-If you don't know the answer, just say that you don't know. 
+If you don't know the answer, just say that you don't know.
 
 Context: {context}
 
 Question: """
+
 
 def create_full_chain(retriever, openai_api_key=None, chat_memory=ChatMessageHistory()):
     model = get_model("ChatGPT", openai_api_key=openai_api_key)
@@ -134,10 +135,14 @@ def ask_question(direct_chain, chain, query):
 
     return response
 
+
 pattern = re.compile(r'\b[a-zA-Z]{2}\d{4}[a-zA-Z0-9]?\b')
+
+
 def detect_module_code(query):
     matches = pattern.findall(query)
     return matches
+
 
 def main():
     load_dotenv()

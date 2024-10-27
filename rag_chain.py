@@ -1,12 +1,13 @@
+import json
 import os
 
 from dotenv import load_dotenv
 from langchain import hub
-from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_core.messages.base import BaseMessage
+from langchain.docstore.document import Document
 
 from basic_chain import basic_chain, get_model
 from remote_loader import get_wiki_docs
@@ -15,7 +16,6 @@ from vector_store import create_vector_db
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
 import re
-import json
 
 
 def rerank_results(inputs):
@@ -27,7 +27,8 @@ def rerank_results(inputs):
     reranker_model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
-    reranked_docs = []
+    # List of Tuple(Document, Score)
+    reranked_docs_with_score = []
 
     # Loop over each document and rank it based on its relevance to the query
     for doc in retrieved_docs:
@@ -43,23 +44,24 @@ def rerank_results(inputs):
             score = torch.sigmoid(outputs.logits[:, 1]).item()  # Get the positive classification score
 
         # Append the document and its score as a tuple
-        reranked_docs.append((doc, score))
+        reranked_docs_with_score.append((doc, score))
 
         # Log the document text and its score
-        print(f"Document: {text[:100]}... | Score: {score}")
+        print(f"Score: {score:.10f} | Document: {text[:100]}...")
 
     # Sort the documents based on the score in descending order
-    reranked_docs = sorted(reranked_docs, key=lambda x: x[1], reverse=True)
+    reranked_docs_with_score = sorted(reranked_docs_with_score, key=lambda x: x[1], reverse=True)
 
     # Log the top document
-    if reranked_docs:
-        top_doc = reranked_docs[0][0].page_content
-        print(f"\nTop Document: {top_doc[:500]}...")  # Print a snippet of the top document
+    if reranked_docs_with_score:
+        top_doc = reranked_docs_with_score[0][0].page_content
+        print(f"Score: {reranked_docs_with_score[0][1]:.10f} | Top Document: {top_doc[:500]}...")
     else:
         print("No documents were retrieved.")
 
-    # Return the top 1 document in the list
-    return [doc[0] for doc in reranked_docs]
+    # Return the reranked documents in the list
+    # TODO Should return only one
+    return [doc[0] for doc in reranked_docs_with_score]
 
 
 def find_similar(vs, query):
@@ -91,19 +93,19 @@ def make_rag_chain(model, retriever, rag_prompt=None):
 
     # And we will use the LangChain RunnablePassthrough to add some custom processing into our chain.
     rag_chain = (
-            {
-                # Step 1: Extract the query from the input
-                "context": RunnableLambda(get_question)
-                           # Step 2: Retrieve documents using the extracted query
-                           | (lambda query: {"docs": retriever.get_relevant_documents(query), "query": query})
-                           # Step 3: Pass the retrieved docs and query to the reranking step
-                           | RunnableLambda(rerank_results)
-                           # Step 4: Format the reranked documents
-                           | format_docs,
-                "question": RunnablePassthrough()
-            }
-            | rag_prompt
-            | model
+        {
+            # Step 1: Extract the query from the input
+            "context": RunnableLambda(get_question)
+            # Step 2: Retrieve documents using the extracted query and limit to top 4 results
+            | (lambda query: {"docs": retriever.get_relevant_documents(query)[:4], "query": query})
+            # Step 3: Pass the retrieved docs and query to the reranking step
+            | RunnableLambda(rerank_results)
+            # Step 4: Format the reranked documents
+            | format_docs,
+            "question": RunnablePassthrough()
+        }
+        | rag_prompt
+        | model
     )
 
     return rag_chain
@@ -160,20 +162,22 @@ def load_and_chunk_json(json_path):
 def make_direct_chain(model, rag_prompt):
     # And we will use the LangChain RunnablePassthrough to add some custom processing into our chain.
     rag_chain = (
-            {
-                # Step 1: Extract the query from the input
-                "context": RunnableLambda(get_question)
-                           | RunnableLambda(fetch_module_content),
-                "question": RunnablePassthrough()
-            }
-            | rag_prompt
-            | model
+        {
+            # Step 1: Extract the query from the input
+            "context": RunnableLambda(get_question)
+                       | RunnableLambda(fetch_module_content),
+            "question": RunnablePassthrough()
+        }
+        | rag_prompt
+        | model
     )
 
     return rag_chain
 
 
 pattern = re.compile(r'\b[a-zA-Z]{2}\d{4}[a-zA-Z0-9]?\b')
+
+
 def detect_module_code(query):
     matches = pattern.findall(query)
     return matches
