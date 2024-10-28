@@ -3,7 +3,7 @@ import time
 
 import pandas as pd
 from streamlit_app import get_retriever
-from rag_chain import rerank_results
+from rag_chain import rerank_results, detect_module_code
 import re
 
 
@@ -28,24 +28,31 @@ def main():
         print("query: " + query)
         print("expected: " + module_code)
 
-        docs = retriever.get_relevant_documents(query)
+        module_codes = []
+        if len(detect_module_code(query)) > 0:
+            print("Direct match")
+            module_codes = detect_module_code(query)
+        else:
+            print("Full chain")
+            docs = retriever.get_relevant_documents(query)
 
-        # As the get_relevant_documents return all documents retrieved by each child retriever (each return 4)
-        # So must filter the top 4 from all documents so the weight will really work
-        docs = docs[:4]
+            # As the get_relevant_documents return all documents retrieved by each child retriever (each return 4)
+            # So must filter the top 4 from all documents so the weight will really work
+            docs = docs[:4]
 
-        reranked_results = rerank_results({"docs": docs, "query": query})
+            reranked_results = rerank_results({"docs": docs, "query": query})
 
-        reranked_results = reranked_results[:1]
+            reranked_results = reranked_results[:1]
 
-        module_codes = extract_module_codes(reranked_results)
-        # module_codes = extract_module_codes(docs)
-        print("result:" + str(module_codes))
+            module_codes = extract_module_codes(reranked_results)
+            # module_codes = extract_module_codes(docs)
+            print("result:" + str(module_codes))
 
         if module_code in module_codes:
             print("Match found")
             hit_count += 1
 
+    print("---- Evaluation Summary ----")
     print(f"Hit count: {hit_count}")
     print(f"Total: {total}")
     print(f"Accuracy: {hit_count / total}")

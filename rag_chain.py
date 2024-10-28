@@ -113,7 +113,7 @@ def make_rag_chain(model, retriever, rag_prompt=None):
 
 def fetch_module_content(query):
     codes = detect_module_code(query)
-    mods = load_and_chunk_json('data/mods22_23_test.json')
+    mods = load_and_chunk_json('data/mods22_23.json')
     contexts = []
     for code in codes:
         query = mods.get(code)
