@@ -1,0 +1,25 @@
+BM25 + 1 Doc
+Hit count: 19
+Total: 100
+Accuracy: 0.19
+Time taken: 44.465030908584595
+
+Vector + 1 Doc
+Hit count: 31
+Total: 100
+Accuracy: 0.31
+Time taken: 43.14912271499634
+
+0.5 BM25 + 0.5 Vector + 1Doc
+Hit count: 24
+Total: 100
+Accuracy: 0.24
+Time taken: 45.79837417602539
+
+0.5 BM25 + 0.5 Vector + Rerank + 1Doc
+Hit count: 14
+Total: 100
+Accuracy: 0.14
+Time taken: 194.14577341079712
+
+

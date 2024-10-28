@@ -36,7 +36,10 @@ def main():
 
         reranked_results = rerank_results({"docs": docs, "query": query})
 
+        reranked_results = reranked_results[:1]
+
         module_codes = extract_module_codes(reranked_results)
+        # module_codes = extract_module_codes(docs)
         print("result:" + str(module_codes))
 
         if module_code in module_codes:

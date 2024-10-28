@@ -39,7 +39,7 @@ def show_ui(dc, qa, prompt_to_user="How may I help you?"):
 # After restarted, the cache is removed and reran
 @st.cache_resource
 def get_retriever(openai_api_key=None):
-    mods = load_and_chunk_json('data/mods22_23_test.json')
+    mods = load_and_chunk_json('data/mods22_23.json')
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key, model="text-embedding-3-small")
     return ensemble_retriever_from_mods(mods, embeddings=embeddings)
 
