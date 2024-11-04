@@ -2,11 +2,7 @@ from langchain.retrievers.document_compressors import DocumentCompressorPipeline
 from langchain_community.document_transformers import EmbeddingsRedundantFilter, LongContextReorder
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings, HuggingFaceEmbeddings
 from langchain.retrievers import EnsembleRetriever, ContextualCompressionRetriever, MergerRetriever
-from langchain.chains import RetrievalQA
 
-from basic_chain import get_model
-from ensemble import ensemble_retriever_from_docs
-from remote_loader import load_web_page
 from vector_store import create_vector_db
 
 from dotenv import load_dotenv
@@ -35,16 +31,7 @@ def create_retriever(texts):
 
 def main():
     load_dotenv()
-
-    problems_of_philosophy_by_russell = "https://www.gutenberg.org/ebooks/5827.html.images"
-
-    docs = load_web_page(problems_of_philosophy_by_russell)
-    ensemble_retriever = ensemble_retriever_from_docs(docs)
-    llm = get_model()
-    qa = RetrievalQA.from_chain_type(llm=llm, chain_type='stuff', retriever=ensemble_retriever)
-
-    results = qa.invoke("What are the key problems of philosophy according to Russell?")
-    print(results)
+    print("To be generated")
 
 
 if __name__ == "__main__":
