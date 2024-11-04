@@ -8,14 +8,13 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from vector_store import EmbeddingProxy  # Adjust this to your actual import
 from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
 import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import euclidean_distances
 from scipy.spatial.distance import pdist, squareform
 from scipy.linalg import eigh
-
+from sklearn.decomposition import PCA
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def get_overview(db):
@@ -63,7 +62,7 @@ def plot_distance_matrix(db, num_samples=500):
     plt.title('Pairwise Distance Matrix')
     plt.xlabel('Sample Index')
     plt.ylabel('Sample Index')
-    plt.savefig("visualization/visualization.png", format='png', dpi=300)
+    plt.savefig("visualization/dense/visualization.png", format='png', dpi=300)
     print(f"3D visualization saved as 'visualization.png'.")
 
 
@@ -111,14 +110,22 @@ def explore_embedding_manifold(db, method='tsne', num_samples=500):
     ax.set_zlabel('Component 3')
 
     # Save the plot to a file
-    plt.savefig("visualization/visualization.png", format='png', dpi=300)
+    plt.savefig("visualization/dense/visualization.png", format='png', dpi=300)
     print(f"3D visualization saved as 'visualization.png'.")
 
 
-def diffusion_map_eda(db, num_samples=500):
-    # Step 1: Create or input a sample dataset (you can replace this with your vector list)
-    records = db._collection.get(limit=num_samples, include=['embeddings'])
+def diffusion_map_eda(db, num_samples=500, max_eigenvalues=140):
+    """
+    Perform Diffusion Map analysis on embeddings and visualize the first max_eigenvalues,
+    excluding the first trivial eigenvalue (which is always 1).
 
+    Args:
+    - db: Chroma vector DB instance.
+    - num_samples: Number of samples to analyze (default is 500).
+    - max_eigenvalues: Maximum number of eigenvalues to display (default is 140).
+    """
+    # Step 1: Retrieve embeddings from the database
+    records = db._collection.get(limit=num_samples, include=['embeddings'])
     embeddings = records['embeddings']
 
     if not embeddings:
@@ -131,9 +138,7 @@ def diffusion_map_eda(db, num_samples=500):
     dist_matrix = euclidean_distances(embeddings, embeddings)
 
     # Step 3: Construct the affinity matrix using Gaussian kernel (Diffusion map kernel)
-    # epsilon = np.median(dist_matrix) ** 2  # You can adjust epsilon for different results
-    # Using 25th percentile instead of mean
-    epsilon = np.percentile(dist_matrix, 25) ** 2
+    epsilon = np.percentile(dist_matrix, 25) ** 2  # Use the 25th percentile
     K = np.exp(-dist_matrix ** 2 / (2 * epsilon))
 
     # Step 4: Normalize the affinity matrix to form the diffusion operator
@@ -144,23 +149,56 @@ def diffusion_map_eda(db, num_samples=500):
     # Step 5: Perform eigen decomposition of the normalized diffusion operator
     eigenvalues, eigenvectors = eigh(A)
 
-    # Step 6: Sort the eigenvalues in descending order (ignore the trivial first eigenvalue)
-    eigenvalues = eigenvalues[::-1]
-
-    # Step 7: Filter eigenvalues that are greater than 0.1
-    filtered_eigenvalues = eigenvalues[eigenvalues > 0.1]
-    filtered_indices = np.arange(1, len(filtered_eigenvalues) + 1)
+    # Step 6: Sort the eigenvalues in descending order, exclude the first one, and limit to max_eigenvalues
+    eigenvalues = eigenvalues[::-1][1:max_eigenvalues + 1]  # Exclude the first eigenvalue and limit to max_eigenvalues
+    filtered_indices = np.arange(1, len(eigenvalues) + 1)
 
     # Plot the filtered eigenvalues
     plt.figure(figsize=(10, 6))
-    plt.bar(filtered_indices, filtered_eigenvalues, color='blue')
-    plt.title('Filtered Eigenvalues from Diffusion Map (Ordered, > 0.1)')
+    plt.bar(filtered_indices, eigenvalues, color='blue')
+    plt.title(f'First {max_eigenvalues} Filtered Eigenvalues from Diffusion Map (Excluding First Component)')
     plt.xlabel('Index of Eigenvalue')
     plt.ylabel('Eigenvalue Magnitude')
 
     # Save the plot to a file
-    plt.savefig("visualization/visualization_filtered.png", format='png', dpi=300)
+    plt.savefig("visualization/dense/visualization_filtered.png", format='png', dpi=300)
     print("Visualization saved as 'visualization_filtered.png'.")
+
+
+def pca_feature_analysis(db, num_samples=500, max_eigenvalues=140):
+    """
+    Perform PCA on embeddings to analyze and visualize the explained variance ratio
+    of the first max_eigenvalues components.
+
+    Args:
+    - db: Chroma vector DB instance.
+    - num_samples: Number of samples to analyze (default is 500).
+    - max_eigenvalues: Maximum number of eigenvalues to display in the bar chart (default is 140).
+    """
+    # Extract embeddings from the database
+    records = db._collection.get(limit=num_samples, include=['embeddings'])
+    embeddings = records['embeddings']
+
+    if not embeddings:
+        print("No embeddings found.")
+        return
+
+    embeddings = np.array(embeddings)
+
+    # Apply PCA for dimensionality reduction
+    pca = PCA()
+    pca.fit(embeddings)
+    explained_variances = pca.explained_variance_ratio_
+
+    # Plot the bar chart for the first max_eigenvalues components
+    plt.figure(figsize=(10, 6))
+    plt.bar(range(1, min(max_eigenvalues, len(explained_variances)) + 1),
+            explained_variances[:max_eigenvalues], color='blue')
+    plt.title("Explained Variance Ratio by Principal Component")
+    plt.xlabel("Principal Component")
+    plt.ylabel("Explained Variance Ratio")
+    plt.savefig("visualization/dense/pca_explained_variance_bar.png", format='png', dpi=300)
+    print("PCA explained variance bar chart saved as 'visualization/dense/pca_explained_variance_bar.png'.")
 
 
 def main():
@@ -180,6 +218,7 @@ def main():
     # plot_distance_matrix(db, num_samples=db._collection.count())
     # plot_distance_matrix(db, num_samples=db._collection.count() / 4)
     diffusion_map_eda(db, db._collection.count())
+    # pca_feature_analysis(db, db._collection.count())
 
 
 if __name__ == "__main__":
