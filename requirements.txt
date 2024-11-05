@@ -53,3 +53,5 @@ watchdog
 watchfiles
 wikipedia
 openpyxl
+yake
+streamlit
