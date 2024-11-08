@@ -46,11 +46,29 @@ Time taken: 45.04717779159546
 Conclusion: full-text also behaves poorly in direct match. The accuracy mainly comes from content
 
 -----
-Vector + 4 Doc
+Vector + 4 Doc 1536 dimension
 Hit count: 42
 Total: 100
 Accuracy: 0.42
 Time taken: 110.6396918296814
+
+Vector + 4 Doc 768 dimension
+Hit count: 42
+Total: 100
+Accuracy: 0.42
+Time taken: 40.57761836051941
+
+Vector + 4 Doc 384 dimension
+Hit count: 41
+Total: 100
+Accuracy: 0.41
+Time taken: 41.47486901283264
+
+Vector + 4 Doc 100 dimension
+Hit count: 32
+Total: 100
+Accuracy: 0.32
+Time taken: 40.96525311470032
 ----
 Conclusion: Vector search do better in content search
 

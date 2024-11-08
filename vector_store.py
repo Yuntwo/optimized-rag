@@ -30,8 +30,11 @@ class EmbeddingProxy:
 
 
 class LocalEmbeddings(Embeddings):
-    def __init__(self, local_embeddings):
+    def __init__(self, embedding=None, local_embeddings=None, pca_model_path="pca_model.pkl"):
+        self.embedding = embedding
         self.local_embeddings = local_embeddings
+        with open(pca_model_path, "rb") as f:
+            self.pca_model = pickle.load(f)
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         sleep(EMBED_DELAY)
@@ -39,11 +42,16 @@ class LocalEmbeddings(Embeddings):
 
     def embed_query(self, text: str) -> List[float]:
         sleep(EMBED_DELAY)
-        return self.local_embeddings
+        # 生成原始的高维查询嵌入
+        query_embedding = self.embedding.embed_query(text)
+        # 使用 PCA 模型对查询嵌入降维
+        reduced_query_embedding = self.pca_model.transform([query_embedding])[0]
+        # print(f"Generated low dimension embeddings : {reduced_query_embedding}")
+        return reduced_query_embedding.tolist()
 
 
 # load db from persistent db
-# 14439 documents in total
+# 14439 documents in total, 1536 dimension each
 def get_vector_db(collection_name="chroma"):
     openai_api_key = os.environ["OPENAI_API_KEY"]
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key, model="text-embedding-3-small")
@@ -51,6 +59,17 @@ def get_vector_db(collection_name="chroma"):
     proxy_embeddings = EmbeddingProxy(embeddings)
     db = Chroma(collection_name=collection_name,
                 embedding_function=proxy_embeddings,
+                persist_directory=os.path.join("store/", collection_name))
+    return db
+
+
+def get_low_dimension_vector_db(collection_name="low"):
+    openai_api_key = os.environ["OPENAI_API_KEY"]
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key, model="text-embedding-3-small")
+    local_embeddings = LocalEmbeddings(embedding=embeddings)
+
+    db = Chroma(collection_name=collection_name,
+                embedding_function=local_embeddings,
                 persist_directory=os.path.join("store/", collection_name))
     return db
 
@@ -96,7 +115,7 @@ def create_low_dimension_vector_db(low_dim_collection_name="low",
     # Apply PCA transformation to reduce the dimensionality
     reduced_embeddings = pca.fit_transform(dimension_embeddings).tolist()
 
-    local_embeddings = LocalEmbeddings(local_embeddings=reduced_embeddings)
+    local_embeddings = LocalEmbeddings(embedding=embeddings, local_embeddings=reduced_embeddings)
 
     # Create a new low-dimensional vector database
     low_dim_db = Chroma(collection_name=low_dim_collection_name,
