@@ -115,3 +115,67 @@ class TruncatedSVDTFIDFRetriever(TFIDFRetriever):
     def _calculate_similarity(self, query_vector):
         from sklearn.metrics.pairwise import cosine_similarity
         return cosine_similarity(query_vector, self.tfidf_array).flatten()
+
+
+class PCATFIDFRetriever(TFIDFRetriever):
+
+    n_components: int = Field(default=10)
+
+    pca: Optional[PCA] = None
+
+    # 实例化时的操作与父类一致，只是额外进行降维加上降维参数
+    def __init__(self, vectorizer=None, docs=None, tfidf_array=None, n_components=10, **kwargs):
+        # 调用父类构造函数
+        super().__init__(vectorizer=vectorizer, docs=docs, tfidf_array=tfidf_array, **kwargs)
+        self.n_components = n_components
+        self.pca = PCA(n_components=self.n_components)
+        # 应用 PCA 降维并覆盖 tfidf_array
+        # Original 37242 Sparse dimension
+        self.tfidf_array = self.pca.fit_transform(self.tfidf_array.toarray())
+
+    @classmethod
+    def from_texts(
+        cls,
+        texts: Iterable[str],
+        metadatas: Optional[Iterable[dict]] = None,
+        tfidf_params: Optional[Dict[str, Any]] = None,
+        n_components: int = 10,
+        **kwargs: Any,
+    ) -> "PCATFIDFRetriever":
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+        except ImportError:
+            raise ImportError(
+                "Could not import scikit-learn, please install with `pip install "
+                "scikit-learn`."
+            )
+
+        tfidf_params = tfidf_params or {}
+        vectorizer = TfidfVectorizer(**tfidf_params)
+        tfidf_array = vectorizer.fit_transform(texts)
+        metadatas = metadatas or ({} for _ in texts)
+        docs = [Document(page_content=t, metadata=m) for t, m in zip(texts, metadatas)]
+
+        instance = cls(vectorizer=vectorizer, docs=docs, tfidf_array=tfidf_array, n_components=n_components, **kwargs)
+        return instance
+
+    def get_relevant_documents(
+        self,
+        query: str,
+        *,
+        callbacks=None,
+        tags: Optional[List[str]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        run_name: Optional[str] = None,
+        **kwargs: Any,
+    ) -> List[Document]:
+        # 使用 vectorizer 生成查询的 TF-IDF 向量并应用 PCA
+        query_vector = self.pca.transform(self.vectorizer.transform([query]).toarray())
+        # 计算查询与降维后的 TF-IDF 向量的相似度
+        scores = self._calculate_similarity(query_vector)
+        top_indices = scores.argsort()[::-1]
+        return [self.docs[i] for i in top_indices]
+
+    def _calculate_similarity(self, query_vector):
+        from sklearn.metrics.pairwise import cosine_similarity
+        return cosine_similarity(query_vector, self.tfidf_array).flatten()
