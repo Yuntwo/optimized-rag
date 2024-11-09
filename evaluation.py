@@ -91,7 +91,7 @@ def main():
                 fuzzy_hit_count += 1
             hit_count += 1
 
-    # print("---- Evaluation Summary ----")
+    print("---- Evaluation Summary ----")
     # print(f"Hit count: {hit_count}")
     # print(f"Total: {total}")
     print(f"Accuracy: {hit_count / total}")
