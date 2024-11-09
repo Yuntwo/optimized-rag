@@ -15,17 +15,18 @@ from splitter import split_documents
 from vector_store import create_vector_db
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
+from torch.nn.functional import softmax
 import re
+
+# Initialize the BERT model for sequence classification
+reranker_model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
 
 def rerank_results(inputs):
     """Rerank retrieved documents using a reranker model (BERT)."""
     retrieved_docs = inputs['docs']  # Extract the retrieved documents
     query = inputs['query']  # Extract the query
-
-    # Initialize the BERT model for sequence classification
-    reranker_model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
     # List of Tuple(Document, Score)
     reranked_docs_with_score = []
@@ -41,7 +42,7 @@ def rerank_results(inputs):
         # Use the model to generate a relevance score
         with torch.no_grad():
             outputs = reranker_model(**input_tokens)
-            score = torch.sigmoid(outputs.logits[:, 1]).item()  # Get the positive classification score
+            score = softmax(outputs.logits, dim=1)[:, 1].item()  # Get the positive classification score
 
         # Append the document and its score as a tuple
         reranked_docs_with_score.append((doc, score))
@@ -60,7 +61,6 @@ def rerank_results(inputs):
         print("No documents were retrieved.")
 
     # Return the reranked documents in the list
-    # TODO Should return only one
     return [doc[0] for doc in reranked_docs_with_score]
 
 
