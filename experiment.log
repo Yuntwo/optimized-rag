@@ -31,6 +31,42 @@ Total: 100
 Accuracy: 0.25
 Time taken: 46.218228578567505
 
+TF-IDF + 4 Doc 6800 mods + 10000 dimension
+Hit count: 51
+Total: 100
+Accuracy: 0.51
+Time taken: 264.8121702671051
+
+TF-IDF + 4 Doc all mods  + SVD 37242 dimension
+Hit count: 49
+Total: 100
+Accuracy: 0.49
+Time taken: 1168.9623773097992
+
+TF-IDF + 4 Doc all mods  + PCA 14439 dimension
+Hit count: 55
+Total: 100
+Accuracy: 0.55
+Time taken: 1123.383550643921
+
+TF-IDF + 4 Doc all mods + SVD 10000 dimension
+Hit count: 42
+Total: 100
+Accuracy: 0.42
+Time taken: 1540.9216396808624
+
+TF-IDF + 4 Doc all mods + SVD 1000 dimension
+Hit count: 18
+Total: 100
+Accuracy: 0.18
+Time taken: 86.76330947875977
+
+TF-IDF + 4 Doc all mods + SVD 5000 dimension
+Hit count: 33
+Total: 100
+Accuracy: 0.33
+Time taken: 778.6862154006958
+
 TF-IDF + Keyword Extraction + 4 Doc
 Hit count: 37
 Total: 100
