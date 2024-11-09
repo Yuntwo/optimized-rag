@@ -2,7 +2,6 @@ import os
 import time
 
 import pandas as pd
-from sympy import false
 
 from streamlit_app import get_retriever
 from rag_chain import rerank_results, detect_module_code
@@ -92,21 +91,23 @@ def main():
                 fuzzy_hit_count += 1
             hit_count += 1
 
-    print("---- Evaluation Summary ----")
-    print(f"Hit count: {hit_count}")
-    print(f"Total: {total}")
+    # print("---- Evaluation Summary ----")
+    # print(f"Hit count: {hit_count}")
+    # print(f"Total: {total}")
     print(f"Accuracy: {hit_count / total}")
     print(f"Time taken: {time.time() - start_time}")
-    print("---- Match Type Counts ----")
+    # print("---- Match Type Counts ----")
     print(f"Direct match count: {direct_match_count}")
     print(f"Full chain count: {full_chain_count}")
-    print(f"Explicit doc search count: {explicit_doc_search_count}, hit count: {explicit_hit_count}, rate: {explicit_hit_count / explicit_doc_search_count}")
-    print(f"Fuzzy doc search count: {fuzzy_doc_search_count}, hit count: {fuzzy_hit_count}, rate: {fuzzy_hit_count / fuzzy_doc_search_count}")
+    print(f"Explicit doc search count: {explicit_doc_search_count}, hit count: {explicit_hit_count}, rate: {explicit_hit_count / explicit_doc_search_count:.3f}")
+    print(f"Fuzzy doc search count: {fuzzy_doc_search_count}, hit count: {fuzzy_hit_count}, rate: {fuzzy_hit_count / fuzzy_doc_search_count:.3f}")
 
 
 def extract_module_codes(documents):
     module_codes = []
     pattern = r"The module code is (\w+)"
+    # !!! Solution: For Rewriting
+    # pattern = r"Module Code: (\w+)"
 
     for document in documents:
         match = re.search(pattern, document.page_content)
