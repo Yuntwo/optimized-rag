@@ -57,3 +57,5 @@ yake~=0.4.8
 streamlit
 seaborn~=0.13.2
 matplotlib~=3.9.2
+neo4j
+py2neo

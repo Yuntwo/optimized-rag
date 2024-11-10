@@ -69,6 +69,12 @@ python basic_chain.py
 streamlit run streamlit_app.py
 ```
 
+### Setup Neo4j
+
+1. Visit [official website](https://neo4j.com/docs/operations-manual/current/installation/) for installation instruction.
+
+2. Start the Neo4j and visit Port 7474 for admin
+
 ## Attention
 
 - Don't open multiple pages for the app, or will run parallel evaluation or other scripts whenever restart.
