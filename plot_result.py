@@ -14,9 +14,14 @@ hybrid_values = [0.482, 0.659, 0.56]  # Hybrid search values for each metric (ba
 # hybrid_approach_values = [0.321, 0.591, 0.44]
 
 # Reranking
-fulltext_approach_values = [0.786, 0.500, 0.66]
-vector_approach_values = [0.036, 0.659, 0.31]
-hybrid_approach_values = [0.732, 0.682, 0.71]
+# fulltext_approach_values = [0.786, 0.500, 0.66]
+# vector_approach_values = [0.036, 0.659, 0.31]
+# hybrid_approach_values = [0.732, 0.682, 0.71]
+
+# Rewriting + Reranking
+fulltext_approach_values = [0.589, 0.523, 0.56]
+vector_approach_values = [0.018, 0.705, 0.32]
+hybrid_approach_values = [0.482, 0.591, 0.53]
 
 
 def plot_baseline(save_path="plot/baseline.png"):
@@ -129,6 +134,9 @@ def plot_approach(save_path="plot/approach.png"):
     plt.show()
     print(f"Plot saved as '{save_path}'.")
 
+
+dimension = [1536, 768, 384, 100]
+overall_hit_rate = [0.42, 0.42, 0.41, 0.32]
 
 # Call the functions to plot and save the charts
 # plot_baseline()
