@@ -135,9 +135,55 @@ def plot_approach(save_path="plot/approach.png"):
     print(f"Plot saved as '{save_path}'.")
 
 
-dimension = [1536, 768, 384, 100]
-overall_hit_rate = [0.42, 0.42, 0.41, 0.32]
+dimension = [1536, 768, 384, 100, 30]
+overall_hit_rate = [0.42, 0.42, 0.41, 0.32, 0.1]
+
+
+def plot_dimension_vs_hit_rate(dimension, overall_hit_rate, save_path="plot/vector_search_dim_reduction.png"):
+    """
+    Plots a scatter chart for Vector Search dimensionality reduction approach with dimensions on x-axis
+    and overall hit rate on y-axis, with the x-axis arranged from largest to smallest values.
+
+    Args:
+    - dimension (list): List of dimensions for the x-axis.
+    - overall_hit_rate (list): List of overall hit rates corresponding to each dimension.
+    - save_path (str): File path to save the plot image.
+    """
+    # Reverse the data to make x-axis display from large to small
+    dimension = dimension[::-1]
+    overall_hit_rate = overall_hit_rate[::-1]
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(dimension, overall_hit_rate, color='b', label='Overall Hit Rate')
+
+    # Add labels and title
+    plt.xlabel('Dimension')
+    plt.ylabel('Overall Hit Rate')
+    plt.title('Vector Search Dimensionality Reduction Approach')
+
+    # Connect points with a line
+    plt.plot(dimension, overall_hit_rate, color='b', linestyle='--', linewidth=0.8)
+
+    # Annotate points and display dimension values
+    for x, y in zip(dimension, overall_hit_rate):
+        plt.text(x, y + 0.02, f'{y:.2f}', ha='center', va='bottom')  # Hit Rate above the point
+        plt.text(x, y - 0.04, f'{x}', ha='center', va='top')          # Dimension below the point
+
+    # Set y-axis to log scale for better readability if dimensions vary widely
+    plt.xscale('log')
+    plt.gca().invert_xaxis()  # Invert x-axis to display from large to small
+
+    # Adjust y-axis limit to provide extra space at the top
+    plt.ylim(0, 0.6)
+
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(save_path, format='png', dpi=300)
+    plt.show()
+    print(f"Plot saved as '{save_path}'.")
+
 
 # Call the functions to plot and save the charts
 # plot_baseline()
-plot_approach()
+# plot_approach()
+plot_dimension_vs_hit_rate(dimension=dimension, overall_hit_rate=overall_hit_rate)
