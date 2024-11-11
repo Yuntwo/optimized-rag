@@ -109,7 +109,7 @@ def explore_embedding_manifold(db, method='tsne', num_samples=500):
     ax.set_ylabel('Component 2')
     ax.set_zlabel('Component 3')
 
-    # Save the plot to a file
+    # Save the plot_baseline to a file
     plt.savefig("visualization/dense/visualization.png", format='png', dpi=300)
     print(f"3D visualization saved as 'visualization.png'.")
 
@@ -160,7 +160,7 @@ def diffusion_map_eda(db, num_samples=500, max_eigenvalues=140):
     plt.xlabel('Index of Eigenvalue')
     plt.ylabel('Eigenvalue Magnitude')
 
-    # Save the plot to a file
+    # Save the plot_baseline to a file
     plt.savefig("visualization/dense/visualization_filtered.png", format='png', dpi=300)
     print("Visualization saved as 'visualization_filtered.png'.")
 
@@ -205,19 +205,19 @@ def main():
     load_dotenv()
     openai_api_key = os.getenv("OPENAI_API_KEY")
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key, model="text-embedding-3-small")
-    collection_name = "chroma"
+    collection_name = "raw"
     # Initialize embedding proxy and Chroma DB
     proxy_embeddings = EmbeddingProxy(embeddings)
     db = Chroma(collection_name=collection_name,
                 embedding_function=proxy_embeddings,
                 persist_directory=os.path.join("store/", collection_name))
-    # get_overview(db)
+    get_overview(db)
     # get_document_by_id(db, "CS5344")
     # explore_embedding_manifold(db, method='tsne', num_samples=db._collection.count())
     # explore_embedding_manifold(db, method='pca', num_samples=db._collection.count())
     # plot_distance_matrix(db, num_samples=db._collection.count())
     # plot_distance_matrix(db, num_samples=db._collection.count() / 4)
-    diffusion_map_eda(db, db._collection.count())
+    # diffusion_map_eda(db, db._collection.count())
     # pca_feature_analysis(db, db._collection.count())
 
 
