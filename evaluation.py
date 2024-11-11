@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 
+from knowledge_graph import retrieve_related_modules
 from streamlit_app import get_retriever
 from rag_chain import rerank_results, detect_module_code
 import re
@@ -43,7 +44,9 @@ def main():
         module_codes = detect_module_code(query)
         # !!! Solution: Detect module code and fallback to full chain if false
         is_direct_match = False
-        # is_direct_match = True
+        is_direct_match = True
+        # is_knowledge_graph = False
+        is_knowledge_graph = True
 
         if is_direct_match:
             if module_codes:
@@ -65,7 +68,7 @@ def main():
             # docs = docs[:1]
 
             # !!! Solution: Rerank
-            # docs = rerank_results({"docs": docs, "query": query})
+            docs = rerank_results({"docs": docs, "query": query})
 
             # If asking a specific module code, then only match 1
             if len(module_codes) > 0:
@@ -82,6 +85,9 @@ def main():
                 fuzzy_doc_search_count += 1
 
             module_codes = extract_module_codes(docs)
+            # !!! Solution: knowledge graph
+            if is_knowledge_graph:
+                module_codes.extend(retrieve_related_modules(query))
             print("result:" + str(module_codes))
         if module_code in module_codes:
             print("Match found")
@@ -105,9 +111,9 @@ def main():
 
 def extract_module_codes(documents):
     module_codes = []
-    pattern = r"The module code is (\w+)"
+    # pattern = r"The module code is (\w+)"
     # !!! Solution: For Rewriting
-    # pattern = r"Module Code: (\w+)"
+    pattern = r"Module Code: (\w+)"
 
     for document in documents:
         match = re.search(pattern, document.page_content)
