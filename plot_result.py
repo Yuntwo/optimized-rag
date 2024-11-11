@@ -135,8 +135,15 @@ def plot_approach(save_path="plot/approach.png"):
     print(f"Plot saved as '{save_path}'.")
 
 
-dimension = [1536, 768, 384, 100, 30]
-overall_hit_rate = [0.42, 0.42, 0.41, 0.32, 0.1]
+# Vector Dimension
+# dimension = [1536, 768, 384, 100, 30]
+# overall_hit_rate = [0.42, 0.42, 0.41, 0.32, 0.1]
+
+
+# Fulltext Dimension
+dimension = [37242, 10000, 5000, 1000, 30]
+overall_hit_rate = [0.49, 0.42, 0.33, 0.18, 0.0]
+time = [1540, 1168, 778, 86, 42]  # 示例时间数据，单位可以为秒
 
 
 def plot_dimension_vs_hit_rate(dimension, overall_hit_rate, save_path="plot/vector_search_dim_reduction.png"):
@@ -183,7 +190,70 @@ def plot_dimension_vs_hit_rate(dimension, overall_hit_rate, save_path="plot/vect
     print(f"Plot saved as '{save_path}'.")
 
 
+def plot_dimension_vs_hit_rate_and_time(dimension, overall_hit_rate, time,
+                                        save_path="plot/fulltext_search_dim_reduction.png"):
+    """
+    Plots a scatter chart for Vector Search dimensionality reduction approach with dimensions on x-axis,
+    overall hit rate on y-axis, and an additional line for time.
+
+    Args:
+    - dimension (list): List of dimensions for the x-axis.
+    - overall_hit_rate (list): List of overall hit rates corresponding to each dimension.
+    - time (list): List of time values corresponding to each dimension.
+    - save_path (str): File path to save the plot image.
+    """
+    # Reverse the data to make x-axis display from large to small
+    dimension = dimension[::-1]
+    overall_hit_rate = overall_hit_rate[::-1]
+    time = time[::-1]
+
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # Plot overall hit rate as scatter and line
+    ax1.scatter(dimension, overall_hit_rate, color='b', label='Overall Hit Rate')
+    ax1.plot(dimension, overall_hit_rate, color='b', linestyle='--', linewidth=0.8)
+
+    # Add labels for overall hit rate points
+    for x, y in zip(dimension, overall_hit_rate):
+        ax1.text(x, y + 0.02, f'{y:.2f}', ha='center', va='bottom')  # Hit Rate above the point
+        ax1.text(x, y - 0.02, f'{x}', ha='center', va='top')  # Dimension below the point
+
+    # Set up the first y-axis for Overall Hit Rate
+    ax1.set_xlabel('Dimension')
+    ax1.set_ylabel('Overall Hit Rate', color='b')
+    ax1.set_ylim(0, 0.6)
+    ax1.set_xscale('log')
+    ax1.invert_xaxis()  # Display dimensions from large to small
+    ax1.tick_params(axis='y', labelcolor='b')
+
+    # Plot time as a line on the second y-axis
+    ax2 = ax1.twinx()
+    ax2.plot(dimension, time, color='r', label='Time', marker='o', linestyle='-', linewidth=1.2)
+
+    # Add labels for time points
+    for x, t in zip(dimension, time):
+        ax2.text(x - 0.2 * x, t, f'{t}', ha='left', va='bottom', color='r')
+
+    # Set up the second y-axis for Time
+    ax2.set_ylabel('Time (s)', color='r')
+    ax2.tick_params(axis='y', labelcolor='r')
+    ax2.set_ylim(0, 1700)
+
+    # Add title and legend
+    plt.title('Full-text Search Dimensionality Reduction Approach with Overall Hit Rate and Time')
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
+
+    plt.grid(True)
+    plt.savefig(save_path, format='png', dpi=300)
+    plt.show()
+    print(f"Plot saved as '{save_path}'.")
+
+
+# Example usage
+
 # Call the functions to plot and save the charts
 # plot_baseline()
 # plot_approach()
-plot_dimension_vs_hit_rate(dimension=dimension, overall_hit_rate=overall_hit_rate)
+# plot_dimension_vs_hit_rate(dimension=dimension, overall_hit_rate=overall_hit_rate)
+plot_dimension_vs_hit_rate_and_time(dimension, overall_hit_rate, time)
