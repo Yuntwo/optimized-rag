@@ -8,10 +8,15 @@ fulltext_values = [0.660, 0.500, 0.59]  # Fulltext search values for each metric
 vector_values = [0.232, 0.659, 0.42]  # Vector search values for each metric (baseline)
 hybrid_values = [0.482, 0.659, 0.56]  # Hybrid search values for each metric (baseline)
 
-# Approach values
-fulltext_approach_values = [0.464, 0.522, 0.49]
-vector_approach_values = [0.214, 0.682, 0.42]
-hybrid_approach_values = [0.321, 0.591, 0.44]
+# Rewriting
+# fulltext_approach_values = [0.464, 0.522, 0.49]
+# vector_approach_values = [0.214, 0.682, 0.42]
+# hybrid_approach_values = [0.321, 0.591, 0.44]
+
+# Reranking
+fulltext_approach_values = [0.786, 0.500, 0.66]
+vector_approach_values = [0.036, 0.659, 0.31]
+hybrid_approach_values = [0.732, 0.682, 0.71]
 
 
 def plot_baseline(save_path="plot/baseline.png"):
@@ -126,5 +131,5 @@ def plot_approach(save_path="plot/approach.png"):
 
 
 # Call the functions to plot and save the charts
-plot_baseline()
-# plot_approach()
+# plot_baseline()
+plot_approach()
