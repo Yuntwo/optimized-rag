@@ -46,6 +46,8 @@ cypher_prompt = PromptTemplate(
       - Modules have prerequisites with the relationship "HAS_PREREQUISITE" to "Requirement"
       - Modules have preclusions with the relationship "HAS_PRECLUSION" to "Requirement"
 
+    Make the query flexible by using case-insensitive matching and partial string matching where appropriate.
+
     Generate only the Cypher query based on this structure and do not include additional explanations.
 
     Question: {question}
@@ -124,11 +126,12 @@ def retrieve_related_modules(question):
         print(f"Error executing Cypher query: {e}")
         return []
 
+
 # Execute the function to populate the graph
 create_module_nodes(modules)
 
 # Example usage
 # question = "Multi-core Architectures"
-question = "Big Data Analytics"
+question = "Find modules with advanced operating systems."
 related_modules = retrieve_related_modules(question)
 print(related_modules)
